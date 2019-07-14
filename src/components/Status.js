@@ -13,6 +13,25 @@ export default class Status extends React.Component {
     isConnected: null
   };
 
+  async componentWillMount() {
+    NetInfo.isConnected.addEventListener("connectionChange", this.handleChange);
+
+    const isConnected = await NetInfo.isConnected.fetch();
+
+    this.setState({ isConnected });
+  }
+
+  componentWillUnmount() {
+    NetInfo.isConnected.removeEventListener(
+      "connectionChange",
+      this.handleChange
+    );
+  }
+
+  handleChange = isConnected => {
+    this.setState({ isConnected });
+  };
+
   render() {
     const { isConnected } = this.state;
 
@@ -44,11 +63,11 @@ export default class Status extends React.Component {
         </View>
       );
     }
-    return null;
+    return messageContainer;
   }
 }
 
-const statusHeight = Platform.OS === "ios" ? 10 : 0;
+const statusHeight = Platform.OS === "ios" ? 35 : 0;
 const styles = StyleSheet.create({
   status: {
     zIndex: 1,
