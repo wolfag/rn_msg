@@ -41,7 +41,7 @@ class App extends React.Component {
     isInputFocused: false
   };
 
-  componentWillMount() {
+  componentDidMount() {
     this.subscription = BackHandler.addEventListener(
       "hardwareBackPress",
       () => {
@@ -62,7 +62,19 @@ class App extends React.Component {
 
   handlePressToolbarCamera = () => {};
 
-  handlePressToolbarLocation = () => {};
+  handlePressToolbarLocation = () => {
+    const { messages } = this.state;
+
+    navigator.geolocation.getCurrentPosition(position => {
+      const {
+        coords: { latitude, longitude }
+      } = position;
+
+      this.setState({
+        messages: [createLocationMessage({ latitude, longitude }), ...messages]
+      });
+    });
+  };
 
   handleChangeFocus = isFocused => {
     this.setState({ isInputFocused: isFocused });

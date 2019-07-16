@@ -1,39 +1,31 @@
-import {
-  NetInfo,
-  Platform,
-  StatusBar,
-  StyleSheet,
-  Text,
-  View
-} from "react-native";
+import { Platform, StatusBar, StyleSheet, Text, View } from "react-native";
 import React from "react";
+import NetInfo from "@react-native-community/netinfo";
 
 export default class Status extends React.Component {
   state = {
-    isConnected: null
+    connectionType: null
   };
 
-  async componentWillMount() {
-    NetInfo.isConnected.addEventListener("connectionChange", this.handleChange);
-
-    const isConnected = await NetInfo.isConnected.fetch();
-
-    this.setState({ isConnected });
+  async componentDidMount() {
+    this.subscription = NetInfo.addEventListener(state => {
+      this.handleChange(state.type);
+      this.setState({ connectionType: state.type });
+    });
   }
 
   componentWillUnmount() {
-    NetInfo.isConnected.removeEventListener(
-      "connectionChange",
-      this.handleChange
-    );
+    this.subscription();
   }
 
-  handleChange = isConnected => {
-    this.setState({ isConnected });
+  handleChange = connectionType => {
+    this.setState({ connectionType });
   };
 
   render() {
-    const { isConnected } = this.state;
+    const { connectionType } = this.state;
+
+    const isConnected = connectionType !== "none";
 
     const backgroundColor = isConnected ? "white" : "red";
 
