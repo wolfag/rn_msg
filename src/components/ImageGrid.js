@@ -1,9 +1,4 @@
-import {
-  Image,
-  StyleSheet,
-  TouchableOpacity,
-  PermissionsAndroid
-} from "react-native";
+import { Image, StyleSheet, TouchableOpacity, Alert } from "react-native";
 import PropTypes from "prop-types";
 import React from "react";
 import CameraRoll from "@react-native-community/cameraroll";
@@ -27,21 +22,56 @@ export default class ImageGrid extends React.Component {
   };
 
   state = {
-    images: []
+    images: [],
+    photoPermission: null
   };
 
   componentDidMount() {
-    this.getImages();
+    // this.getImages();
+    Permissions.check("photo").then(response => {
+      // Response is one of: 'authorized', 'denied', 'restricted', or 'undetermined'
+      this.setState({ photoPermission: response }, () => {
+        if (response === "authorized") {
+          this.getImages();
+        } else {
+          this._alertForPhotosPermission();
+        }
+      });
+    });
+  }
+
+  _requestPermission = () => {
+    Permissions.request("photo").then(response => {
+      // Returns once the user has chosen to 'allow' or to 'not allow' access
+      // Response is one of: 'authorized', 'denied', 'restricted', or 'undetermined'
+      this.setState({ photoPermission: response });
+      if (response === "authorized") {
+        this.getImages();
+      }
+    });
+  };
+
+  _alertForPhotosPermission() {
+    Alert.alert(
+      "Can we access your photos?",
+      "We need access so you can send your photos",
+      [
+        {
+          text: "No way",
+          onPress: () => console.log("Permission denied"),
+          style: "cancel"
+        },
+        this.state.photoPermission == "undetermined"
+          ? { text: "OK", onPress: this._requestPermission }
+          : { text: "Open Settings", onPress: Permissions.openSettings }
+      ]
+    );
   }
 
   getImages = async () => {
     if (this.loading) return;
     this.loading = true;
 
-    const status = await Permissions.request("photo");
-    if (status !== "authorized") {
-      console.log("photo permission denied");
-    }
     const result = await CameraRoll.getPhotos({
       first: 20
     });
