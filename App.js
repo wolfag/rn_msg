@@ -16,6 +16,8 @@ import {
   BackHandler
 } from "react-native";
 
+import Geolocation from "react-native-geolocation-service";
+
 import Status from "./src/components/Status";
 import MessageList from "./src/components/MessageList";
 import Toolbar from "./src/components/Toolbar";
@@ -25,6 +27,8 @@ import {
   createLocationMessage,
   createTextMessage
 } from "./src/utils/MessageUtils";
+
+import ImageGrid from "./src/components/ImageGrid";
 
 class App extends React.Component {
   state = {
@@ -65,7 +69,7 @@ class App extends React.Component {
   handlePressToolbarLocation = () => {
     const { messages } = this.state;
 
-    navigator.geolocation.getCurrentPosition(position => {
+    Geolocation.getCurrentPosition(position => {
       const {
         coords: { latitude, longitude }
       } = position;
@@ -170,9 +174,20 @@ class App extends React.Component {
     );
   }
 
-  renderInputMethodEditor() {
-    return <View style={styles.inputMethodEditor} />;
-  }
+  renderInputMethodEditor = () => {
+    return (
+      <View style={styles.inputMethodEditor}>
+        <ImageGrid onPressImage={this.handlePressImage} />
+      </View>
+    );
+  };
+
+  handlePressImage = uri => {
+    const { messages } = this.state;
+    this.setState({
+      messages: [createImageMessage(uri), ...messages]
+    });
+  };
 
   render() {
     return (
