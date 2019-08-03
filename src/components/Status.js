@@ -10,7 +10,6 @@ export default class Status extends React.Component {
   async componentDidMount() {
     this.subscription = NetInfo.addEventListener(state => {
       this.handleChange(state.type);
-      this.setState({ connectionType: state.type });
     });
   }
 
@@ -59,7 +58,7 @@ export default class Status extends React.Component {
   }
 }
 
-const statusHeight = Platform.OS === "ios" ? 35 : 0;
+const statusHeight = Platform.OS === "ios" ? 20 : 0;
 const styles = StyleSheet.create({
   status: {
     zIndex: 1,

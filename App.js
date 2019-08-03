@@ -29,23 +29,29 @@ import {
 } from "./src/utils/MessageUtils";
 
 import ImageGrid from "./src/components/ImageGrid";
+import KeyboardState from "./src/components/KeyboardState";
+import MeasureLayout from "./src/components/MeasureLayout";
+import MessagingContainer, {
+  INPUT_METHOD
+} from "./src/components/MessagingContainer";
 
 class App extends React.Component {
   state = {
     messages: [
       createImageMessage("https://unsplash.it/300/300"),
       createTextMessage("world"),
-      createTextMessage("hellow"),
+      createTextMessage("hello"),
       createLocationMessage({
         latitude: 37.78825,
         longitude: -122.4324
       })
     ],
-    fillscreenImageId: null,
-    isInputFocused: false
+    fullscreenImageId: null,
+    isInputFocused: false,
+    inputMethod: INPUT_METHOD.NONE
   };
 
-  componentDidMount() {
+  componentWillMount() {
     this.subscription = BackHandler.addEventListener(
       "hardwareBackPress",
       () => {
@@ -55,6 +61,7 @@ class App extends React.Component {
           this.dismissFullscreenImage();
           return true;
         }
+
         return false;
       }
     );
@@ -64,7 +71,20 @@ class App extends React.Component {
     this.subscription.remove();
   }
 
-  handlePressToolbarCamera = () => {};
+  dismissFullscreenImage = () => {
+    this.setState({ fullscreenImageId: null });
+  };
+
+  handleChangeInputMethod = inputMethod => {
+    this.setState({ inputMethod });
+  };
+
+  handlePressToolbarCamera = () => {
+    this.setState({
+      isInputFocused: false,
+      inputMethod: INPUT_METHOD.CUSTOM
+    });
+  };
 
   handlePressToolbarLocation = () => {
     const { messages } = this.state;
@@ -107,10 +127,6 @@ class App extends React.Component {
       </View>
     );
   }
-
-  dismissFullscreenImage = () => {
-    this.setState({ fullscreenImageId: null });
-  };
 
   handlePressMessage = ({ id, type }) => {
     switch (type) {
@@ -190,12 +206,33 @@ class App extends React.Component {
   };
 
   render() {
+    const { inputMethod } = this.state;
     return (
       <View style={styles.container}>
-        <Status />
+        {/* <Status />
         {this.renderMessageList()}
         {this.renderToolbar()}
         {this.renderInputMethodEditor()}
+        {this.renderFullscreenImage()} */}
+
+        <Status />
+        <MeasureLayout>
+          {layout => (
+            <KeyboardState layout={layout}>
+              {keyboardInfo => (
+                <MessagingContainer
+                  {...keyboardInfo}
+                  inputMethod={inputMethod}
+                  onChangeInputMethod={this.handleChangeInputMethod}
+                  renderInputMethodEditor={this.renderInputMethodEditor}
+                >
+                  {this.renderMessageList()}
+                  {this.renderToolbar()}
+                </MessagingContainer>
+              )}
+            </KeyboardState>
+          )}
+        </MeasureLayout>
         {this.renderFullscreenImage()}
       </View>
     );
